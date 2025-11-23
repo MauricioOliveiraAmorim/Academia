@@ -21,6 +21,15 @@ class FrequenciaService {
 
         return await frequenciaDAO.criar(dados);
     }
+
+    async atualizarFrequencia(id, presenca) {
+        if (!id || !presenca) {
+            throw new Error("ID e Status são obrigatórios.");
+        }
+        const dados = { presenca };
+        return await frequenciaDAO.atualizar(id, dados);
+    }
+
     async listar() {
         return await frequenciaDAO.listarTodas();
     }

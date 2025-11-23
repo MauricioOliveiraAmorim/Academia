@@ -3,6 +3,7 @@ const router = express.Router();
 const frequenciaController = require('../controllers/FrequenciaController');
 
 router.post('/', frequenciaController.criar);
+router.patch('/:id', frequenciaController.atualizar);
 router.get('/', frequenciaController.listar);
 router.delete('/:id', frequenciaController.deletar);
 

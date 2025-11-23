@@ -16,14 +16,20 @@ function Login() {
             
             alert(`Bem-vindo, ${resposta.data.tipo}! ID: ${resposta.data.id}`);
             
-            // Redireciona para a tela principal (Alunos ou Dashboard) com base no tipo retornado
+            // Salvar email e ID no localStorage
+            localStorage.setItem('userEmail', email);
+            localStorage.setItem('userId', resposta.data.id);
+
+            // Redireciona para a tela principal (Aluno ou Instrutor) com base no tipo retornado
             const tipoRetornado = resposta.data?.tipo;
             const tipoLower = typeof tipoRetornado === 'string' ? tipoRetornado.toLowerCase() : '';
 
             if (tipoLower === 'instrutor') {
                 navigate('/instrutor');
             } else {
-                navigate('/alunos');
+                // Para alunos, salva o ID como alunoId
+                localStorage.setItem('alunoId', resposta.data.id);
+                navigate('/aluno');
             }
         } catch (error) {
             const msg = error.response?.data?.error || 'Verifique o servidor e as credenciais.';

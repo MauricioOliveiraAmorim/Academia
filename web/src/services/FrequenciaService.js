@@ -7,6 +7,9 @@ class FrequenciaService {
     criar(dados) {
         return api.post('/frequencias', dados);
     }
+    atualizar(id, dados) {
+        return api.patch(`/frequencias/${id}`, dados);
+    }
     deletar(id) {
         return api.delete(`/frequencias/${id}`);
     }

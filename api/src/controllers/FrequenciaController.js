@@ -12,6 +12,18 @@ class FrequenciaController {
         }
     }
 
+    async atualizar(req, res) {
+        try {
+            const { id } = req.params;
+            const { presenca } = req.body;
+            const freq = await frequenciaService.atualizarFrequencia(id, presenca);
+            return res.json(freq);
+        } catch (error) {
+            console.error(error);
+            return res.status(400).json({ error: error.message });
+        }
+    }
+
     async listar(req, res) {
         try {
             const lista = await frequenciaService.listar();

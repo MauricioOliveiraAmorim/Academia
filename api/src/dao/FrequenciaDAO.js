@@ -14,6 +14,13 @@ class FrequenciaDAO {
         });
     }
 
+    async atualizar(id, dados) {
+        return await prisma.frequencia.update({
+            where: { id_frequencia: parseInt(id) },
+            data: dados
+        });
+    }
+
     async deletar(id) {
         return await prisma.frequencia.delete({
             where: { id_frequencia: parseInt(id) }
