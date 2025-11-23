@@ -1,0 +1,91 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model aluno {
+  id_aluno      Int           @id @default(autoincrement())
+  nome          String        @db.VarChar(100)
+  cpf           String        @unique(map: "cpf") @db.Char(14)
+  datamatricula DateTime?     @db.Date
+  frequencia    frequencia[]
+  planotreino   planotreino[]
+}
+
+model exercicio {
+  id_exercicio   Int              @id @default(autoincrement())
+  nome           String           @db.VarChar(100)
+  grupomuscular  String           @db.VarChar(100)
+  equipamento    String           @db.VarChar(100)
+  descricao      String?          @db.VarChar(256)
+  planoexercicio planoexercicio[]
+}
+
+model frequencia {
+  id_frequencia Int                 @id @default(autoincrement())
+  id_aluno      Int
+  dia           DateTime            @db.Date
+  presenca      frequencia_presenca
+  dadosAluno    aluno               @relation(fields: [id_aluno], references: [id_aluno], onDelete: NoAction, onUpdate: NoAction, map: "frequencia_ibfk_1")
+
+  @@index([id_aluno], map: "id_aluno")
+}
+
+model instrutor {
+  id_instrutor  Int           @id @default(autoincrement())
+  nome          String        @db.VarChar(100)
+  especialidade String        @db.VarChar(50)
+  planotreino   planotreino[]
+}
+
+model login {
+  id_login    Int               @id @default(autoincrement())
+  email       String            @unique(map: "email") @db.VarChar(100)
+  senha       String            @db.VarChar(100)
+  tipousuario login_tipousuario
+  referencia  Int
+}
+
+model planoexercicio {
+  id_planoexercicio Int         @id @default(autoincrement())
+  id_planotreino    Int
+  id_exercicio      Int
+  series            Int
+  repeticoes        Int
+  carga             Int?
+  descanso          DateTime?   @db.Time(0)
+  planotreino       planotreino @relation(fields: [id_planotreino], references: [id_planotreino], onDelete: NoAction, onUpdate: NoAction, map: "planoexercicio_ibfk_1")
+  exercicio         exercicio   @relation(fields: [id_exercicio], references: [id_exercicio], onDelete: NoAction, onUpdate: NoAction, map: "planoexercicio_ibfk_2")
+
+  @@index([id_exercicio], map: "id_exercicio")
+  @@index([id_planotreino], map: "id_planotreino")
+}
+
+model planotreino {
+  id_planotreino Int              @id @default(autoincrement())
+  id_aluno       Int
+  id_instrutor   Int
+  descricao      String?          @db.VarChar(256)
+  duracao        Int
+  nome           String?          @db.VarChar(50)
+  planoexercicio planoexercicio[]
+  aluno          aluno            @relation(fields: [id_aluno], references: [id_aluno], onDelete: NoAction, onUpdate: NoAction, map: "planotreino_ibfk_1")
+  instrutor      instrutor        @relation(fields: [id_instrutor], references: [id_instrutor], onDelete: NoAction, onUpdate: NoAction, map: "planotreino_ibfk_2")
+
+  @@index([id_aluno], map: "id_aluno")
+  @@index([id_instrutor], map: "id_instrutor")
+}
+
+enum login_tipousuario {
+  Aluno
+  Instrutor
+}
+
+enum frequencia_presenca {
+  Falta
+  Presente
+}

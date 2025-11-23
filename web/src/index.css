@@ -1,0 +1,333 @@
+/* Limpa o estilo padrão do navegador */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+/* Aplicar as cores globais */
+body {
+    font-family: sans-serif;
+    background-color: #0a0a0a; /* Cor de fundo principal */
+    color: #b0b0b0; /* Cor do texto principal */
+}
+
+/* Estilo para botões (usando a cor de destaque) */
+button {
+    background-color: #b8860b; /* Dark Goldenrod como destaque */
+    color: #0a0a0a;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.3s;
+}
+
+button:hover {
+    background-color: #d4a017; /* Tom mais claro no hover */
+}
+
+/* Estilo para links (usando a cor de destaque) */
+a {
+    color: #b8860b; 
+    text-decoration: none;
+}
+
+/* Estilo para inputs (para combinar com o tema escuro) */
+input, textarea, select {
+    background-color: #1a1a1a;
+    color: #b0b0b0;
+    border: 1px solid #333;
+    border-radius: 4px;
+}
+
+/* Instrutor Dashboard styles */
+.instrutor-dashboard {
+    font-family: Arial, Helvetica, sans-serif;
+    min-height: 100vh;
+    background: #f7f7f7;
+    color: #0a0a0a;
+}
+
+.instrutor-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 20px;
+    background: #0f4c81;
+    color: #fff;
+}
+
+.instrutor-brand {
+    font-weight: 700;
+    font-size: 18px;
+}
+
+.instrutor-topbar-center {
+    color: #fff;
+    opacity: 0.95;
+    text-align: center;
+}
+
+.instrutor-logout-btn {
+    background: #fff !important;
+    color: #0f4c81 !important;
+    border: none !important;
+    padding: 8px 12px !important;
+    border-radius: 4px !important;
+    cursor: pointer !important;
+}
+
+.dashboard-main {
+    padding: 40px 20px;
+    display: flex;
+    justify-content: center;
+}
+
+.dashboard-container {
+    width: 100%;
+    max-width: 1000px;
+    display: flex;
+    gap: 20px;
+    justify-content: space-between;
+}
+
+.card {
+    flex: 1;
+    background: #fff;
+    padding: 24px;
+    border-radius: 8px;
+    box-shadow: 0 6px 18px rgba(16,24,40,0.06);
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.card h3 {
+    margin: 0;
+    color: #0a0a0a;
+}
+
+.card p {
+    margin-top: 8px;
+    color: #555;
+}
+
+.card-button {
+    background: #0f4c81 !important;
+    color: #fff !important;
+    border: none !important;
+    padding: 8px 12px !important;
+    border-radius: 6px !important;
+    cursor: pointer !important;
+}
+
+.card:hover {
+    transform: translateY(-4px);
+    transition: transform 0.16s ease-in-out;
+}
+
+/* Dark dashboard table styles */
+.dashboard-table-container {
+    flex: 1;
+    min-width: 0;
+    background: #1c1c1c;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.6);
+    color: #f0f0f0;
+}
+
+.dashboard-table-title {
+    margin: 0 0 15px 0;
+    color: #ffb81c;
+    border-bottom: 2px solid #333;
+    padding-bottom: 10px;
+}
+
+.dashboard-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+.dashboard-table thead tr {
+    background: #333;
+}
+
+.dashboard-table-th {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #444;
+    color: #ffb81c;
+}
+
+.dashboard-table-row {
+    border-bottom: 1px solid #2a2a2a;
+    transition: background 0.3s;
+}
+
+.dashboard-table-row:hover {
+    background: #2a2a2a;
+}
+
+.dashboard-table-td {
+    padding: 12px;
+    color: #ccc;
+}
+
+.dashboard-empty {
+    padding: 20px;
+    text-align: center;
+    color: #888;
+    font-style: italic;
+}
+
+.action-btn {
+    background: #ffb81c;
+    color: #0a0a0a;
+    border: none;
+    padding: 6px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+/* Instrutor dashboard dark layout */
+.instrutor-dashboard-dark {
+    font-family: Arial, Helvetica, sans-serif;
+    min-height: 100vh;
+    background: #0a0a0a;
+    color: #fff;
+}
+
+.instrutor-topbar-dark {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 20px;
+    background: #1c1c1c;
+    border-bottom: 3px solid #ffb81c;
+    color: #fff;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.4);
+}
+
+.instrutor-brand-dark {
+    font-weight: 700;
+    font-size: 20px;
+    color: #ffb81c;
+}
+
+.topbar-center-dark {
+    color: #ccc;
+    opacity: 0.95;
+    text-align: center;
+    font-weight: 500;
+}
+
+.logout-btn-dark {
+    background: #333;
+    color: #ffb81c;
+    border: 1px solid #ffb81c;
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.2s;
+    font-weight: bold;
+}
+
+.logout-btn-dark:hover {
+    background: #ffb81c;
+    color: #0a0a0a;
+}
+
+.dashboard-main-dark {
+    padding: 40px 20px;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+}
+
+.dashboard-wrapper {
+    width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.add-exercicio-row {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 20px;
+}
+
+.add-exercicio-btn {
+    background: #4CAF50;
+    color: #fff;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background 0.2s;
+}
+
+.add-exercicio-btn:hover {
+    background: #45a049;
+}
+
+.tables-container {
+    display: flex;
+    gap: 40px;
+}
+
+/* Modal styles for create exercise */
+.modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.modal-card {
+    background: #0a0a0a;
+    color: #fff;
+    padding: 24px;
+    border-radius: 8px;
+    width: 100%;
+    max-width: 640px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+    border: 2px solid #ffb81c; /* borda amarela para profundidade */
+}
+
+.modal-card h3 {
+    margin-top: 0;
+}
+
+.form-row {
+    margin-bottom: 12px;
+}
+
+.form-row label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 600;
+}
+
+.form-row input, .form-row textarea, .form-row select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 14px;
+}
