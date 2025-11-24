@@ -1,11 +1,11 @@
 const exercicioDAO = require('../dao/ExercicioDAO');
 
 class ExercicioService {
-    async criarExercicio(nome, grupomuscular, equipamento, descricao) {
+    async criarExercicio(nome, grupomuscular, equipamento, descricao, url_video) {
         if (!nome || !grupomuscular || !equipamento) {
             throw new Error("Nome, Grupo Muscular e Equipamento são obrigatórios.");
         }
-        return await exercicioDAO.criar({ nome, grupomuscular, equipamento, descricao });
+        return await exercicioDAO.criar({ nome, grupomuscular, equipamento, descricao, url_video });
     }
 
     async listarExercicios() {

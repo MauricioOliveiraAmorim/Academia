@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ExercicioService from '../services/ExercicioService';
 import AlunoService from '../services/AlunoService';
+import FrequenciaService from '../services/FrequenciaService';
 
 // Componente Tabela de Painel (Estilo Escuro/Sombrio)
 const DashboardTable = ({ title, columns, data, hasActionButton, actionHandler, actionLabel = 'Ação' }) => (
@@ -50,7 +51,11 @@ const InstrutorDashboard = () => {
     const [alunosData, setAlunosData] = useState([]);
     const [exerciciosData, setExerciciosData] = useState([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [novoExercicio, setNovoExercicio] = useState({ nome: '', grupomuscular: '', equipamento: '', descricao: '' });
+    const [novoExercicio, setNovoExercicio] = useState({ nome: '', grupomuscular: '', equipamento: '', descricao: '', url_video: '' });
+
+    // Estado para Frequência
+    const [isFrequenciaModalOpen, setIsFrequenciaModalOpen] = useState(false);
+    const [novaFrequencia, setNovaFrequencia] = useState({ id_aluno: '', dia: '', presenca: 'Presente' });
 
     useEffect(() => {
         // Buscar alunos e exercícios do backend
@@ -61,8 +66,18 @@ const InstrutorDashboard = () => {
                     ExercicioService.listar()
                 ]);
 
-                setAlunosData((alunosResp?.data || []).map(a => ({ nome_aluno: a.nome, nome_plano: a.planotreino || ' - ', id: a.id_aluno })));
-                setExerciciosData((exerciciosResp?.data || []).map(e => ({ nome: e.nome, grupomuscular: e.grupomuscular, equipamento: e.equipamento, id: e.id_exercicio })));
+                setAlunosData((alunosResp?.data || []).map(a => ({ 
+                    nome_aluno: a.nome, 
+                    nome_plano: (a.planotreino && a.planotreino.length > 0) ? 'Ativo' : 'Inativo', 
+                    id: a.id_aluno 
+                })));
+                setExerciciosData((exerciciosResp?.data || []).map(e => ({ 
+                    nome: e.nome, 
+                    grupomuscular: e.grupomuscular, 
+                    equipamento: e.equipamento, 
+                    id: e.id_exercicio,
+                    link_midia: e.url_video ? <a href={e.url_video} target="_blank" rel="noopener noreferrer" style={{color: '#4CAF50'}}>Ver Mídia</a> : '-'
+                })));
             } catch (err) {
                 console.error('Erro ao buscar dados do dashboard:', err);
             }
@@ -81,7 +96,7 @@ const InstrutorDashboard = () => {
     };
 
     const handleAddExercicio = () => {
-        setNovoExercicio({ nome: '', grupomuscular: '', equipamento: '', descricao: '' });
+        setNovoExercicio({ nome: '', grupomuscular: '', equipamento: '', descricao: '', url_video: '' });
         setIsModalOpen(true);
     };
 
@@ -90,7 +105,13 @@ const InstrutorDashboard = () => {
             await ExercicioService.criar(novoExercicio);
             // Recarrega a lista de exercícios
             const resp = await ExercicioService.listar();
-            setExerciciosData((resp?.data || []).map(e => ({ nome: e.nome, grupomuscular: e.grupomuscular, equipamento: e.equipamento, id: e.id_exercicio })));
+            setExerciciosData((resp?.data || []).map(e => ({ 
+                nome: e.nome, 
+                grupomuscular: e.grupomuscular, 
+                equipamento: e.equipamento, 
+                id: e.id_exercicio,
+                link_midia: e.url_video ? <a href={e.url_video} target="_blank" rel="noopener noreferrer" style={{color: '#4CAF50'}}>Ver Mídia</a> : '-'
+            })));
             setIsModalOpen(false);
             alert('Exercício criado com sucesso.');
         } catch (err) {
@@ -100,12 +121,37 @@ const InstrutorDashboard = () => {
     };
 
     const handleDeleteExercicio = async (id) => {
+        if (!window.confirm("Tem certeza que deseja excluir este exercício?")) return;
+
         try {
             await ExercicioService.deletar(id);
             setExerciciosData(prev => prev.filter(x => x.id !== id));
         } catch (err) {
             console.error('Erro ao deletar exercício:', err);
-            alert('Falha ao deletar exercício.');
+            // Exibe a mensagem de erro vinda do backend (ex: vinculado a plano)
+            const mensagemErro = err.response?.data?.error || 'Falha ao deletar exercício.';
+            alert(mensagemErro);
+        }
+    };
+
+    // Handlers de Frequência
+    const handleOpenFrequenciaModal = () => {
+        setNovaFrequencia({ id_aluno: '', dia: new Date().toISOString().split('T')[0], presenca: 'Presente' });
+        setIsFrequenciaModalOpen(true);
+    };
+
+    const handleCreateFrequencia = async () => {
+        try {
+            if (!novaFrequencia.id_aluno) {
+                alert('Selecione um aluno.');
+                return;
+            }
+            await FrequenciaService.criar(novaFrequencia);
+            setIsFrequenciaModalOpen(false);
+            alert('Frequência registrada com sucesso!');
+        } catch (err) {
+            console.error('Erro ao registrar frequência:', err);
+            alert('Falha ao registrar frequência.');
         }
     };
 
@@ -119,6 +165,7 @@ const InstrutorDashboard = () => {
         { key: 'nome', header: 'Nome do Exercício' },
         { key: 'grupomuscular', header: 'Grupo Muscular' },
         { key: 'equipamento', header: 'Equipamento' },
+        { key: 'link_midia', header: 'Mídia' },
     ];
 
     return (
@@ -141,9 +188,10 @@ const InstrutorDashboard = () => {
             <main className="dashboard-main-dark">
                 <div className="dashboard-wrapper">
 
-                    {/* Botão de Adicionar Exercício */}
-                    <div className="add-exercicio-row">
+                    {/* Botões de Ação */}
+                    <div className="add-exercicio-row" style={{ gap: '10px', display: 'flex' }}>
                         <button onClick={handleAddExercicio} className="add-exercicio-btn">+ Adicionar Novo Exercício</button>
+                        <button onClick={handleOpenFrequenciaModal} className="add-exercicio-btn" style={{ backgroundColor: '#4CAF50' }}>+ Marcar Frequência</button>
                     </div>
 
                     {/* Tabelas Lado a Lado */}
@@ -197,9 +245,70 @@ const InstrutorDashboard = () => {
                             <textarea rows={4} value={novoExercicio.descricao} onChange={(e) => setNovoExercicio(prev => ({ ...prev, descricao: e.target.value }))} />
                         </div>
 
+                        <div className="form-row">
+                            <label>URL do Vídeo/Imagem</label>
+                            <input 
+                                type="text" 
+                                placeholder="https://youtube.com/..." 
+                                value={novoExercicio.url_video} 
+                                onChange={(e) => setNovoExercicio(prev => ({ ...prev, url_video: e.target.value }))} 
+                            />
+                        </div>
+
                         <div className="modal-actions">
                             <button onClick={() => setIsModalOpen(false)} style={{ background: '#ddd', color: '#000' }}>Cancelar</button>
                             <button onClick={handleCreateExercicio}>Criar</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Modal de Frequência */}
+            {isFrequenciaModalOpen && (
+                <div className="modal-backdrop">
+                    <div className="modal-card">
+                        <h3>Registrar Frequência</h3>
+
+                        <div className="form-row">
+                            <label>Aluno</label>
+                            <select 
+                                value={novaFrequencia.id_aluno} 
+                                onChange={(e) => setNovaFrequencia(prev => ({ ...prev, id_aluno: e.target.value }))}
+                                style={{ width: '100%', padding: '8px', borderRadius: '4px' }}
+                            >
+                                <option value="">Selecione um aluno...</option>
+                                {alunosData.map(aluno => (
+                                    <option key={aluno.id_aluno} value={aluno.id_aluno}>
+                                        {aluno.nome_aluno}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+
+                        <div className="form-row">
+                            <label>Data</label>
+                            <input 
+                                type="date" 
+                                value={novaFrequencia.dia} 
+                                onChange={(e) => setNovaFrequencia(prev => ({ ...prev, dia: e.target.value }))} 
+                            />
+                        </div>
+
+                        <div className="form-row">
+                            <label>Status</label>
+                            <select 
+                                value={novaFrequencia.presenca} 
+                                onChange={(e) => setNovaFrequencia(prev => ({ ...prev, presenca: e.target.value }))}
+                                style={{ width: '100%', padding: '8px', borderRadius: '4px' }}
+                            >
+                                <option value="Presente">Presente</option>
+                                <option value="Falta">Falta</option>
+                            </select>
+                        </div>
+
+                        <div className="modal-actions">
+                            <button onClick={() => setIsFrequenciaModalOpen(false)} style={{ background: '#ddd', color: '#000' }}>Cancelar</button>
+                            <button onClick={handleCreateFrequencia}>Registrar</button>
                         </div>
                     </div>
                 </div>

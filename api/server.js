@@ -1,8 +1,9 @@
 const express = require('express');
 const cors = require('cors');
+require('dotenv').config();
 
 const alunoRoutes = require('./src/routes/alunoRoutes');
-const instrutorRoutes = require('./src/routes/instrutorRoutes'); // <--- ADICIONE ISSO
+const instrutorRoutes = require('./src/routes/instrutorRoutes');
 const frequenciaRoutes = require('./src/routes/frequenciaRoutes');
 const exercicioRoutes = require('./src/routes/exercicioRoutes');
 const loginRoutes = require('./src/routes/loginRoutes');
@@ -19,7 +20,7 @@ app.get('/', (req, res) => {
 });
 
 app.use('/alunos', alunoRoutes);
-app.use('/instrutores', instrutorRoutes); // <--- ADICIONE ISSO
+app.use('/instrutores', instrutorRoutes);
 app.use('/frequencias', frequenciaRoutes);
 app.use('/exercicios', exercicioRoutes);
 app.use('/auth', loginRoutes);

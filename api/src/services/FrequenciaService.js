@@ -6,16 +6,19 @@ class FrequenciaService {
                 throw new Error("Aluno, Data e Status são obrigatórios.");
             }
             
-            // TRUQUE: Converter o texto "Presença" para o formato que o Prisma espera
-            // Verifique no seu schema.prisma se é 'Presenca', 'Presen_a' ou outro.
         let statusParaOBanco = presenca;
-        if (presenca === 'Presença') {
-            statusParaOBanco = 'Presen_a'; // Nome exato que está no schema
+        // Mapeia para o Enum do Prisma (Presente ou Falta)
+        if (presenca === 'Presença' || presenca === 'Presente') {
+            statusParaOBanco = 'Presente';
+        } else if (presenca === 'Falta') {
+            statusParaOBanco = 'Falta';
+        } else {
+             throw new Error("Status inválido. Use 'Presente' ou 'Falta'.");
         }
 
         const dados = {
             id_aluno: parseInt(id_aluno),
-            dia: new Date(dia + "T00:00:00Z"),
+            dia: new Date(dia), // Aceita YYYY-MM-DD ou ISO
             presenca: statusParaOBanco 
         };
 

@@ -94,6 +94,7 @@ const AlunoDashboard = () => {
                 repeticoes: it.repeticoes,
                 carga: it.carga,
                 descanso: it.descanso,
+                url_video: it.exercicio?.url_video
             }));
             setExerciciosPlano(lista);
         } catch (err) {
@@ -260,7 +261,19 @@ const AlunoDashboard = () => {
                                         <div style={{ display: 'grid', gap: 12 }}>
                                             {exerciciosPlano.map((ex, idx) => (
                                                 <div key={idx} style={{ background: '#111', padding: 12, borderRadius: 4, borderLeft: '4px solid #ffb81c' }}>
-                                                    <div style={{ fontWeight: 600, marginBottom: 8, color: '#ffb81c' }}>{idx + 1}. {ex.nome}</div>
+                                                    <div style={{ fontWeight: 600, marginBottom: 8, color: '#ffb81c', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                        <span>{idx + 1}. {ex.nome}</span>
+                                                        {ex.url_video && (
+                                                            <a 
+                                                                href={ex.url_video} 
+                                                                target="_blank" 
+                                                                rel="noopener noreferrer" 
+                                                                style={{ fontSize: 12, color: '#000', background: '#ffb81c', padding: '2px 8px', borderRadius: 4, textDecoration: 'none', fontWeight: 'bold' }}
+                                                            >
+                                                                ▶ Ver Vídeo
+                                                            </a>
+                                                        )}
+                                                    </div>
                                                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, fontSize: 13, color: '#ddd' }}>
                                                         <div>
                                                             <span style={{ color: '#888' }}>Séries:</span> {ex.series}

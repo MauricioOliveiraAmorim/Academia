@@ -8,7 +8,9 @@ class AlunoDAO {
     }
 
     async listarTodos() {
-        return await prisma.aluno.findMany();
+        return await prisma.aluno.findMany({
+            include: { planotreino: true }
+        });
     }
 
     async buscarPorId(id) {
