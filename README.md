@@ -196,6 +196,7 @@ npm run dev
 
 - **Repositório GitHub:** [Academia - Mauricio Oliveira Amorim](https://github.com/MauricioOliveiraAmorim/Academia)
 
+- **Link da Parte 1 (Entrega anterior):** https://github.com/naok1m/delivery-app
 ---
 
 ## 📝 Notas
