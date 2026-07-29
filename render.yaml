@@ -1,0 +1,16 @@
+services:
+  - name: academia-api
+    type: web
+    runtime: node
+    plan: free
+    rootDir: api
+    buildCommand: npm ci && npx prisma generate
+    startCommand: node server.js
+    healthCheckPath: /
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: FRONTEND_URL
+        sync: false
