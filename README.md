@@ -1,209 +1,160 @@
-# 🏋️ Sistema de Gestão de Academia
+# 🏋️ Academia — Sistema de Gestão de Academia
 
-> Uma solução completa em arquitetura **Fullstack** para gerenciar academias, com comunicação integrada entre frontend e backend, garantindo integridade referencial em banco de dados relacional.
+[![CI](https://github.com/MauricioOliveiraAmorim/Academia/actions/workflows/ci.yml/badge.svg)](https://github.com/MauricioOliveiraAmorim/Academia/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
----
+**🔗 Demo ao vivo:** [academia-ten-omega.vercel.app](https://academia-ten-omega.vercel.app/)
+*(A API roda no plano free do Render e "dorme" após 15 min sem uso — a primeira requisição depois disso pode levar ~30-60s para responder.)*
 
-## 📋 Sobre o Projeto
+Aplicação fullstack para gestão de academias: cadastro de alunos e instrutores, controle de frequência, planos de treino e catálogo de exercícios, com autenticação JWT baseada em papel (role) e posse (ownership) dos dados.
 
-Este repositório contém a implementação completa do **Sistema de Gestão de Academia**, desenvolvido como Projeto Final para a disciplina de **Ambiente de Dados**.
-
-**Objetivo:** Demonstrar em arquitetura Fullstack a comunicação entre frontend e backend, utilizando um banco relacional com integridade referencial garantida.
-
----
-
-## 🧰 Tecnologias Utilizadas
-
-### Backend
-- **Node.js** - Runtime JavaScript
-- **Express.js** - Framework web
-- **Prisma ORM** - ORM para banco de dados
-
-### Banco de Dados
-- **MySQL** - Banco relacional
-
-### Frontend
-- **React** (Vite) - Biblioteca UI
-- **React Router DOM** - Roteamento
-- **Axios** - Cliente HTTP
+Read this in [English](#-english) below.
 
 ---
 
-## 🏗️ Arquitetura Aplicada
+## 🧰 Stack
 
-A solução segue padrões de design consolidados:
+| Camada | Tecnologias |
+|---|---|
+| **Frontend** | React 19 (Vite), React Router, Tailwind CSS v4, Axios |
+| **Backend** | Node.js, Express 5, Prisma ORM |
+| **Banco de dados** | PostgreSQL |
+| **Autenticação** | JWT + bcrypt, controle por papel (Aluno/Instrutor) e por posse dos dados |
+| **Testes** | Jest (backend, 55 testes / ~92% cobertura na camada de negócio) + Vitest/Testing Library (frontend) |
+| **Infra** | Docker Compose (dev local), GitHub Actions (CI), deploy em Render + Vercel + Neon |
+
+## 🏗️ Arquitetura
+
+Backend em três camadas:
 
 ```
-┌─────────────┐
-│  Controller │ (Camada de Apresentação)
-├─────────────┤
-│   Service   │ (Lógica de Negócio)
-├─────────────┤
-│     DAO     │ (Acesso a Dados)
-└─────────────┘
+Controller (HTTP)  →  Service (regras de negócio)  →  DAO (acesso a dados / Prisma)
 ```
 
-- **DAO** - Acesso aos dados
-- **Service** - Regras de negócio
-- **Controller** - Endpoints da API
+Toda rota (exceto login/registro) passa por middleware de autenticação JWT e checagem de papel/posse — um Aluno só acessa os próprios dados, um Instrutor acessa tudo.
 
----
-
-## 📁 Estrutura do Projeto
+## 📁 Estrutura
 
 ```
 Academia/
-├── api/              # Backend (Node.js + Prisma)
+├── api/                    # Backend (Node + Express + Prisma)
 │   ├── src/
-│   ├── .env
-│   ├── server.js
-│   ├── package.json
-│   └── mysql/        # Script SQL do Banco
-│       └── academia_script.sql
-│
-└── web/              # Frontend (React + Vite)
-    ├── src/
-    ├── vite.config.js
-    ├── package.json
-    └── index.html
+│   │   ├── controllers/
+│   │   ├── services/
+│   │   ├── dao/
+│   │   ├── middlewares/    # autenticação/autorização JWT
+│   │   └── utils/
+│   ├── prisma/schema.prisma
+│   └── *.test.js           # testes Jest ao lado do código testado
+├── web/                    # Frontend (React + Vite + Tailwind)
+│   └── src/
+├── postgres/academia.sql   # schema inicial (usado pelo Docker Compose)
+├── docker-compose.yml      # Postgres local pra desenvolvimento
+├── render.yaml             # Blueprint de deploy da API no Render
+└── .github/workflows/ci.yml
 ```
 
----
+## ✅ Funcionalidades
 
-## ✅ Funcionalidades Implementadas
+- **Autenticação**: registro (Aluno ou Instrutor) e login com JWT, senha com hash bcrypt
+- **Autorização**: rotas restritas por papel (ex.: só Instrutor cria exercícios) e por posse (Aluno só vê/edita os próprios dados)
+- **Alunos** e **Instrutores**: cadastro, listagem, remoção
+- **Frequência**: marcação de presença/falta por dia, com constraint única (sem duplicar registro do mesmo aluno no mesmo dia)
+- **Planos de treino**: cabeçalho do plano + exercícios vinculados (séries, repetições, carga, descanso)
+- **Exercícios**: catálogo com link de vídeo demonstrativo
 
-### 🔐 Autenticação
+## ⚙️ Rodando localmente
 
-| Função | Descrição |
-|--------|-----------|
-| **Login** | Acesso ao sistema |
-| **Registro de usuário** | Criação de aluno ou instrutor |
-| **Segurança** | Rotas protegidas |
-| **Transação** | Registro feito de forma transacional |
-
-### 📚 Módulos do Sistema
-
-| Módulo | Funcionalidades |
-|--------|-----------------|
-| **Aluno** | Cadastro / Listagem / Remoção |
-| **Instrutor** | Cadastro / Listagem / Remoção |
-| **Exercício** | Catálogo de exercícios |
-| **Frequência** | Registro e consulta de presença/falta |
-| **Plano de Treino** | Cadastro do plano (cabeçalho) |
-| **Plano Exercício** | Vínculo N:N entre Plano e Exercício com séries/repetições/carga |
-
----
-
-## ⚙️ Guia de Instalação
-
-### 1️⃣ Banco de Dados
+Requer Node ≥22.22 e Docker.
 
 ```bash
-# Criar o banco de dados
-CREATE DATABASE Academia;
+# 1. Sobe o Postgres local
+docker compose up -d
 
-# Executar o script SQL
-mysql -u USUARIO -p Academia < api/mysql/academia_script.sql
-```
-
-### 2️⃣ Backend (API)
-
-```bash
-# Entrar no diretório
+# 2. Backend
 cd api
-
-# Instalar dependências
 npm install
-```
-
-Criar arquivo `.env`:
-```env
-DATABASE_URL="mysql://USUARIO:SENHA@localhost:3306/Academia"
-```
-
-Sincronizar Prisma:
-```bash
-npx prisma db pull
+cp .env.example .env   # já vem configurado pro Postgres do docker-compose; troque o JWT_SECRET por uma string sua
 npx prisma generate
-```
+npm run dev             # http://localhost:3000
 
-Iniciar servidor:
-```bash
-node server.js
-```
-
-✅ Backend rodando em: **http://localhost:3000**
-
-### 3️⃣ Frontend (Web)
-
-```bash
-# Entrar no diretório
+# 3. Frontend (em outro terminal)
 cd web
-
-# Instalar dependências
 npm install
-
-# Iniciar desenvolvimento
-npm run dev
+cp .env.example .env
+npm run dev              # http://localhost:5173
 ```
 
-✅ Frontend disponível em: **http://localhost:5173**
+### Testes
 
----
-
-## 🖥️ Funcionamento do Sistema
-
-### Fluxo de Acesso
-
-```
-1. Página inicial → /login
-   │
-   ├─ Possui conta? → Fazer login
-   │
-   └─ Não possui? → /registro
-      │
-      ├─ Escolher Aluno ou Instrutor
-      │
-      └─ Registro cria:
-         ├─ Perfil do usuário
-         └─ Registro de login (transacional)
-
-2. Após login → /dashboard
-
-3. Dashboard disponibiliza:
-   ├─ Alunos
-   ├─ Instrutores
-   ├─ Exercícios
-   ├─ Frequência
-   └─ Planos de treino
+```bash
+cd api && npm test              # Jest — 55 testes, camada de negócio
+cd web && npm test               # Vitest
 ```
 
----
+## 🚀 Deploy
 
-## 🏆 Boas Práticas Aplicadas
+- **Frontend**: [Vercel](https://vercel.com) — build estático do Vite
+- **Backend**: [Render](https://render.com), provisionado via [`render.yaml`](render.yaml) (Blueprint)
+- **Banco de dados**: [Neon](https://neon.tech) — Postgres serverless, free tier
+- **CI**: GitHub Actions roda lint, testes e build a cada push/PR
 
-- ✔️ **Arquitetura em três camadas** - Separação clara de responsabilidades
-- ✔️ **Integração com banco via Prisma** - ORM moderno e type-safe
-- ✔️ **Integridade referencial** - Relacionamentos garantidos no BD
-- ✔️ **Transações implementadas** - Operações atômicas
-- ✔️ **Tratamento de erros centralizado** - Middleware de erro
-- ✔️ **Rotas protegidas** - Autenticação obrigatória
-- ✔️ **APIs REST** - Padrão RESTful bem definido
+## 🗺️ Possíveis melhorias
 
----
+- Validação de dígito verificador do CPF (hoje só valida quantidade de dígitos)
+- Testes de integração (supertest) contra um banco real, cobrindo a camada de DAO
+- Mais cobertura de testes de frontend (hoje concentrada em utilitários)
 
-## 🔗 Links Úteis
+## 📄 Licença
 
-- **Repositório GitHub:** [Academia - Mauricio Oliveira Amorim](https://github.com/MauricioOliveiraAmorim/Academia)
-
-- **Link da Parte 1 (Entrega anterior):** https://github.com/naok1m/delivery-app
----
-
-## 📝 Notas
-
-- O sistema utiliza sessões para manter o usuário autenticado
-- Todas as operações de registro são transacionais para evitar inconsistências
-- A integridade referencial é garantida pelo banco de dados
-- O frontend comunica com a API via Axios
+[MIT](LICENSE)
 
 ---
+
+## 🇺🇸 English
+
+Fullstack academy/gym management app: student and instructor records, attendance tracking, workout plans, and an exercise catalog, with JWT authentication enforcing both role-based and ownership-based access control.
+
+**🔗 Live demo:** [academia-ten-omega.vercel.app](https://academia-ten-omega.vercel.app/)
+*(The API runs on Render's free tier and spins down after 15 min of inactivity — the first request after that can take ~30-60s to wake up.)*
+
+### Stack
+
+React 19 (Vite) + Tailwind CSS on the frontend; Node.js/Express 5 + Prisma on the backend; PostgreSQL; JWT + bcrypt auth; Jest (backend, 55 tests, ~92% coverage on the business logic layer) + Vitest/Testing Library (frontend); Docker Compose for local dev; GitHub Actions CI; deployed on Render (API), Vercel (frontend), and Neon (Postgres).
+
+### Architecture
+
+Three-layer backend: `Controller → Service → DAO`, with a JWT middleware enforcing role checks (e.g. only instructors can create exercises) and ownership checks (a student can only read/write their own records) on every route except login/register.
+
+### Running locally
+
+Requires Node ≥22.22 and Docker.
+
+```bash
+docker compose up -d          # local Postgres
+
+cd api
+npm install
+cp .env.example .env
+npx prisma generate
+npm run dev                    # http://localhost:3000
+
+cd web
+npm install
+cp .env.example .env
+npm run dev                    # http://localhost:5173
+```
+
+Run tests with `npm test` in `api/` (Jest) and `web/` (Vitest).
+
+### Deploy
+
+Frontend on Vercel, API on Render (provisioned via [`render.yaml`](render.yaml)), database on Neon (serverless Postgres, free tier). CI runs lint, tests, and build on every push/PR via GitHub Actions.
+
+### Possible improvements
+
+CPF checksum validation (currently only checks digit count), integration tests against a real database (covering the DAO layer), broader frontend test coverage.
+
+### License
+
+[MIT](LICENSE)
