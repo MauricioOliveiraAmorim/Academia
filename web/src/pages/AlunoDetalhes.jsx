@@ -38,6 +38,19 @@ const AlunoDetalhes = () => {
     const month = currentDate.getMonth();
 
     useEffect(() => {
+        const token = localStorage.getItem('token');
+        const tipo = localStorage.getItem('userTipo');
+        const userId = localStorage.getItem('userId');
+
+        if (!token) {
+            navigate('/login');
+            return;
+        }
+        if (tipo === 'Aluno' && String(userId) !== String(id)) {
+            navigate('/aluno');
+            return;
+        }
+
         async function load() {
             try {
                 const alunoResp = await AlunoService.buscar(id);

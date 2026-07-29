@@ -53,8 +53,19 @@ function Registro() {
         setLoading(true);
         try {
             const resposta = await api.post('/auth/registro', payload);
-            alert(`Usuário ${resposta.data.perfil.nome} (${tipo}) registrado com sucesso!`);
-            navigate('/login');
+            const { novoLogin, token } = resposta.data;
+
+            localStorage.setItem('userEmail', novoLogin.email);
+            localStorage.setItem('userId', novoLogin.referencia);
+            localStorage.setItem('userTipo', novoLogin.tipousuario);
+            localStorage.setItem('token', token);
+
+            if (novoLogin.tipousuario === 'Instrutor') {
+                navigate('/instrutor');
+            } else {
+                localStorage.setItem('alunoId', novoLogin.referencia);
+                navigate('/aluno');
+            }
         } catch (error) {
             console.error('Erro de Registro:', error);
 

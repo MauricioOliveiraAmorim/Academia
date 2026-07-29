@@ -73,7 +73,11 @@ class LoginService {
 
         // Nunca devolve o hash da senha para o cliente
         const { senha: _senha, ...loginSemSenha } = novoLogin;
-        return { perfil, novoLogin: loginSemSenha };
+
+        const payload = { id: novoLogin.referencia, tipo: novoLogin.tipousuario, email: novoLogin.email };
+        const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
+
+        return { perfil, novoLogin: loginSemSenha, token };
     }
 
     async autenticar(email, senha) {
