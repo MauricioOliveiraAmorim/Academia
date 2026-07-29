@@ -37,6 +37,14 @@ class FrequenciaService {
         return await frequenciaDAO.listarTodas();
     }
 
+    async listarPorAluno(id_aluno) {
+        return await frequenciaDAO.listarPorAluno(id_aluno);
+    }
+
+    async buscarPorId(id) {
+        return await frequenciaDAO.buscarPorId(id);
+    }
+
     async deletar(id) {
         return await frequenciaDAO.deletar(id);
     }

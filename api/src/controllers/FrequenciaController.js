@@ -5,6 +5,9 @@ class FrequenciaController {
     async criar(req, res) {
         try {
             const { id_aluno, dia, presenca } = req.body;
+            if (req.user.tipo === 'Aluno' && req.user.id !== parseInt(id_aluno)) {
+                return res.status(403).json({ error: 'Você só pode registrar sua própria frequência.' });
+            }
             const novaFrequencia = await frequenciaService.registrarFrequencia(id_aluno, dia, presenca);
             return res.status(201).json(novaFrequencia);
         } catch (error) {
@@ -17,6 +20,12 @@ class FrequenciaController {
         try {
             const { id } = req.params;
             const { presenca } = req.body;
+            if (req.user.tipo === 'Aluno') {
+                const existente = await frequenciaService.buscarPorId(id);
+                if (!existente || existente.id_aluno !== req.user.id) {
+                    return res.status(403).json({ error: 'Você só pode atualizar sua própria frequência.' });
+                }
+            }
             const freq = await frequenciaService.atualizarFrequencia(id, presenca);
             return res.json(freq);
         } catch (error) {
@@ -27,7 +36,11 @@ class FrequenciaController {
 
     async listar(req, res) {
         try {
-            const lista = await frequenciaService.listar();
+            let { aluno } = req.query;
+            if (req.user.tipo === 'Aluno') {
+                aluno = req.user.id;
+            }
+            const lista = aluno ? await frequenciaService.listarPorAluno(aluno) : await frequenciaService.listar();
             return res.json(lista);
         } catch (error) {
             console.error(error);

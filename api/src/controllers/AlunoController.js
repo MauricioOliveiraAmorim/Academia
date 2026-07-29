@@ -31,6 +31,9 @@ class AlunoController {
     async buscarPorId(req, res) {
         try {
             const { id } = req.params;
+            if (req.user.tipo === 'Aluno' && req.user.id !== parseInt(id)) {
+                return res.status(403).json({ error: 'Você só pode acessar seus próprios dados.' });
+            }
             const aluno = await alunoService.buscarAluno(id);
             return res.json(aluno);
         } catch (error) {
@@ -41,6 +44,9 @@ class AlunoController {
     async atualizar(req, res) {
         try {
             const { id } = req.params;
+            if (req.user.tipo === 'Aluno' && req.user.id !== parseInt(id)) {
+                return res.status(403).json({ error: 'Você só pode atualizar seus próprios dados.' });
+            }
             const dados = req.body;
             const alunoAtualizado = await alunoService.atualizarAluno(id, dados);
             return res.json(alunoAtualizado);

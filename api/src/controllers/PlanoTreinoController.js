@@ -15,8 +15,11 @@ class PlanoTreinoController {
 
     async listar(req, res) {
         try {
-            // ?aluno=ID to filter by aluno
-            const { aluno } = req.query;
+            // ?aluno=ID to filter by aluno; um Aluno é sempre restrito ao próprio id
+            let { aluno } = req.query;
+            if (req.user.tipo === 'Aluno') {
+                aluno = req.user.id;
+            }
             if (aluno) {
                 const lista = await planoTreinoService.listarPorAluno(aluno);
                 return res.json(lista);
@@ -33,6 +36,9 @@ class PlanoTreinoController {
         try {
             const { id } = req.params;
             const p = await planoTreinoService.buscar(id);
+            if (req.user.tipo === 'Aluno' && p.id_aluno !== req.user.id) {
+                return res.status(403).json({ error: 'Você só pode acessar seus próprios planos.' });
+            }
             return res.json(p);
         } catch (error) {
             console.error(error);

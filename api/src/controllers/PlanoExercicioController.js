@@ -1,4 +1,5 @@
 const planoExercicioService = require('../services/PlanoExercicioService');
+const planoTreinoService = require('../services/PlanoTreinoService');
 const { prismaErrorResponse } = require('../utils/prismaErrorResponse');
 
 class PlanoExercicioController {
@@ -16,6 +17,12 @@ class PlanoExercicioController {
     async listarPorPlano(req, res) {
         try {
             const { id_planotreino } = req.params;
+            if (req.user.tipo === 'Aluno') {
+                const plano = await planoTreinoService.buscar(id_planotreino);
+                if (plano.id_aluno !== req.user.id) {
+                    return res.status(403).json({ error: 'Você só pode acessar exercícios dos seus próprios planos.' });
+                }
+            }
             const lista = await planoExercicioService.listarPorPlano(id_planotreino);
             return res.json(lista);
         } catch (error) {

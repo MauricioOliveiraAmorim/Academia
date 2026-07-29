@@ -37,17 +37,15 @@ const AlunoDashboard = () => {
 
     useEffect(() => {
         const storedId = localStorage.getItem('alunoId');
-        const storedEmail = localStorage.getItem('userEmail');
+        const token = localStorage.getItem('token');
 
-        if (!storedId && !storedEmail) {
+        if (!storedId || !token) {
             navigate('/login');
             return;
         }
 
-        if (storedId) {
-            setAlunoId(storedId);
-            loadAlunoData(storedId);
-        }
+        setAlunoId(storedId);
+        loadAlunoData(storedId);
     }, [navigate]);
 
     const loadAlunoData = async (id) => {
@@ -130,6 +128,9 @@ const AlunoDashboard = () => {
     const handleLogout = () => {
         localStorage.removeItem('alunoId');
         localStorage.removeItem('userEmail');
+        localStorage.removeItem('userId');
+        localStorage.removeItem('userTipo');
+        localStorage.removeItem('token');
         navigate('/login');
     };
 

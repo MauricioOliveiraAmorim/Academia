@@ -1,9 +1,11 @@
 const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 const loginDAO = require('../dao/LoginDAO');
 const prisma = require('../prismaClient');
 const { cleanAndValidateCpf } = require('../utils/cpf');
 
 const SALT_ROUNDS = 10;
+const JWT_EXPIRES_IN = '8h';
 
 class LoginService {
     async registrarNovoUsuario(dadosRegistro) {
@@ -88,11 +90,15 @@ class LoginService {
         if (!senhaValida) {
             throw new Error("Senha incorreta.");
         }
-        
+
+        const payload = { id: login.referencia, tipo: login.tipousuario, email: login.email };
+        const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
+
         return {
             mensagem: "Login efetuado com sucesso.",
-            id: login.referencia, 
-            tipo: login.tipousuario
+            id: login.referencia,
+            tipo: login.tipousuario,
+            token
         };
     }
 }

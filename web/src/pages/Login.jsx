@@ -21,9 +21,11 @@ function Login() {
 
             localStorage.setItem('userEmail', email);
             localStorage.setItem('userId', resposta.data.id);
+            localStorage.setItem('token', resposta.data.token);
 
             const tipoRetornado = resposta.data?.tipo;
             const tipoLower = typeof tipoRetornado === 'string' ? tipoRetornado.toLowerCase() : '';
+            localStorage.setItem('userTipo', tipoRetornado || '');
 
             if (tipoLower === 'instrutor') {
                 navigate('/instrutor');

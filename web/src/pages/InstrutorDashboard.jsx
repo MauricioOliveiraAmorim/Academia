@@ -71,6 +71,13 @@ const InstrutorDashboard = () => {
     const [novaFrequencia, setNovaFrequencia] = useState({ id_aluno: '', dia: '', presenca: 'Presente' });
 
     useEffect(() => {
+        const token = localStorage.getItem('token');
+        const tipo = localStorage.getItem('userTipo');
+        if (!token || tipo !== 'Instrutor') {
+            navigate('/login');
+            return;
+        }
+
         async function fetchData() {
             try {
                 const [alunosResp, exerciciosResp] = await Promise.all([
@@ -97,6 +104,8 @@ const InstrutorDashboard = () => {
     function handleLogout() {
         localStorage.removeItem('userEmail');
         localStorage.removeItem('userId');
+        localStorage.removeItem('userTipo');
+        localStorage.removeItem('token');
         navigate('/login');
     }
 

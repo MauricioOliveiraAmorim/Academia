@@ -17,6 +17,19 @@ class FrequenciaDAO {
         });
     }
 
+    async listarPorAluno(id_aluno) {
+        return await prisma.frequencia.findMany({
+            where: { id_aluno: parseInt(id_aluno) },
+            include: { dadosAluno: true }
+        });
+    }
+
+    async buscarPorId(id) {
+        return await prisma.frequencia.findUnique({
+            where: { id_frequencia: parseInt(id) }
+        });
+    }
+
     async atualizar(id, dados) {
         return await prisma.frequencia.update({
             where: { id_frequencia: parseInt(id) },
