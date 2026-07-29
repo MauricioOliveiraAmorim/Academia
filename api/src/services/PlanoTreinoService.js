@@ -16,7 +16,11 @@ class PlanoTreinoService {
     }
 
     async buscar(id) {
-        return await planoTreinoDAO.buscarPorId(id);
+        const plano = await planoTreinoDAO.buscarPorId(id);
+        if (!plano) {
+            throw new Error('Plano de treino não encontrado.');
+        }
+        return plano;
     }
 
     async deletar(id) {

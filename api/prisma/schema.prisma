@@ -14,6 +14,8 @@ model aluno {
   datamatricula DateTime?     @db.Date
   frequencia    frequencia[]
   planotreino   planotreino[]
+
+  @@map("Aluno")
 }
 
 model exercicio {
@@ -24,6 +26,8 @@ model exercicio {
   descricao      String?          @db.VarChar(256)
   url_video      String?          @db.VarChar(512)
   planoexercicio planoexercicio[]
+
+  @@map("Exercicio")
 }
 
 model frequencia {
@@ -33,7 +37,8 @@ model frequencia {
   presenca      frequencia_presenca
   dadosAluno    aluno               @relation(fields: [id_aluno], references: [id_aluno], onDelete: NoAction, onUpdate: NoAction, map: "frequencia_ibfk_1")
 
-  @@index([id_aluno], map: "id_aluno")
+  @@unique([id_aluno, dia], map: "id_aluno_dia")
+  @@map("Frequencia")
 }
 
 model instrutor {
@@ -41,6 +46,8 @@ model instrutor {
   nome          String        @db.VarChar(100)
   especialidade String        @db.VarChar(50)
   planotreino   planotreino[]
+
+  @@map("Instrutor")
 }
 
 model login {
@@ -49,6 +56,8 @@ model login {
   senha       String            @db.VarChar(100)
   tipousuario login_tipousuario
   referencia  Int
+
+  @@map("Login")
 }
 
 model planoexercicio {
@@ -64,6 +73,7 @@ model planoexercicio {
 
   @@index([id_exercicio], map: "id_exercicio")
   @@index([id_planotreino], map: "id_planotreino")
+  @@map("PlanoExercicio")
 }
 
 model planotreino {
@@ -79,6 +89,7 @@ model planotreino {
 
   @@index([id_aluno], map: "id_aluno")
   @@index([id_instrutor], map: "id_instrutor")
+  @@map("PlanoTreino")
 }
 
 enum login_tipousuario {

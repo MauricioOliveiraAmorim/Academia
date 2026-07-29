@@ -1,4 +1,5 @@
 const exercicioService = require('../services/ExercicioService');
+const { prismaErrorResponse } = require('../utils/prismaErrorResponse');
 
 class ExercicioController {
     async criar(req, res) {
@@ -29,11 +30,10 @@ class ExercicioController {
             return res.status(204).send();
         } catch (error) {
             console.error("Erro ao deletar exercício:", error);
-            // P2003 é o código de erro do Prisma para violação de chave estrangeira
             if (error.code === 'P2003') {
                 return res.status(400).json({ error: "Não é possível excluir este exercício pois ele está vinculado a um plano de treino." });
             }
-            return res.status(500).json({ error: "Erro ao deletar exercício." });
+            return prismaErrorResponse(res, error, "Erro ao deletar exercício.");
         }
     }
 }

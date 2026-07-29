@@ -1,4 +1,5 @@
 const frequenciaService = require('../services/FrequenciaService');
+const { prismaErrorResponse } = require('../utils/prismaErrorResponse');
 
 class FrequenciaController {
     async criar(req, res) {
@@ -8,7 +9,7 @@ class FrequenciaController {
             return res.status(201).json(novaFrequencia);
         } catch (error) {
             console.error(error);
-            return res.status(400).json({ error: error.message });
+            return prismaErrorResponse(res, error, error.message, 400);
         }
     }
 
@@ -20,7 +21,7 @@ class FrequenciaController {
             return res.json(freq);
         } catch (error) {
             console.error(error);
-            return res.status(400).json({ error: error.message });
+            return prismaErrorResponse(res, error, error.message, 400);
         }
     }
 
@@ -40,7 +41,7 @@ class FrequenciaController {
             await frequenciaService.deletar(id);
             return res.status(204).send();
         } catch (error) {
-            return res.status(500).json({ error: "Erro ao deletar frequência." });
+            return prismaErrorResponse(res, error, "Erro ao deletar frequência.");
         }
     }
 }

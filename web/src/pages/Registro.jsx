@@ -1,31 +1,35 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import api from '../services/api'; 
-// Certifique-se de que o arquivo de service do backend está configurado!
+import api from '../services/api';
+import AuthLayout from '../components/AuthLayout';
+import Button from '../components/ui/Button';
+import { Input, Select, Label } from '../components/ui/Input';
 
 function Registro() {
     const [nome, setNome] = useState('');
     const [email, setEmail] = useState('');
     const [senha, setSenha] = useState('');
-    const [confirmaSenha, setConfirmaSenha] = useState(''); // NOVO CAMPO
-    const [tipo, setTipo] = useState('Aluno'); // 'Aluno' ou 'Instrutor'
+    const [confirmaSenha, setConfirmaSenha] = useState('');
+    const [tipo, setTipo] = useState('Aluno');
     const [cpf, setCpf] = useState('');
     const [especialidade, setEspecialidade] = useState('');
     const [error, setError] = useState('');
+    const [loading, setLoading] = useState(false);
 
     const navigate = useNavigate();
 
+    const cpfInvalido = tipo === 'Aluno' && cpf.length > 0 && !/^\d{11}$/.test(cpf.replace(/\D/g, ''));
+    const senhasDivergem = confirmaSenha.length > 0 && senha !== confirmaSenha;
+
     async function handleRegistro(e) {
         e.preventDefault();
-        setError(''); // Limpa erros anteriores
+        setError('');
 
-        // 1. **Validação de Senhas no Frontend**
         if (senha !== confirmaSenha) {
             setError('A senha e a confirmação de senha não coincidem.');
             return;
         }
 
-        // Validação do CPF quando o tipo for Aluno
         if (tipo === 'Aluno') {
             const apenasDigitos = cpf.replace(/\D/g, '');
             if (!/^\d{11}$/.test(apenasDigitos)) {
@@ -34,13 +38,11 @@ function Registro() {
             }
         }
 
-        // 2. Coleta os dados básicos
         const dadosComuns = { nome, email, senha, tipo };
         let payload = {};
 
-        // 3. Adiciona campos específicos ao payload
         if (tipo === 'Aluno') {
-            payload = { ...dadosComuns, cpf }; 
+            payload = { ...dadosComuns, cpf };
         } else if (tipo === 'Instrutor') {
             payload = { ...dadosComuns, especialidade };
         } else {
@@ -48,106 +50,119 @@ function Registro() {
             return;
         }
 
+        setLoading(true);
         try {
-            // Chama o novo endpoint /auth/registro
-            const resposta = await api.post('/auth/registro', payload); 
+            const resposta = await api.post('/auth/registro', payload);
             alert(`Usuário ${resposta.data.perfil.nome} (${tipo}) registrado com sucesso!`);
             navigate('/login');
         } catch (error) {
             console.error('Erro de Registro:', error);
 
-            // O backend retorna { error: <mensagem> } e não sempre `message`, então checamos ambos
             const respData = error.response?.data || {};
             const msg = (respData.message || respData.error || error.message || 'Erro desconhecido no registro.').toString();
-
-            // Normaliza para comparações
             const lower = msg.toLowerCase();
 
-            // Detecta e-mail já existente (mensagens em PT-BR do backend contain 'e-mail' ou 'email' + 'já'/'registr')
             if ((lower.includes('e-mail') || lower.includes('email')) && (lower.includes('já') || lower.includes('ja') || lower.includes('registr'))) {
                 setError('Falha no Registro: O e-mail já está sendo utilizado.');
-                return;
-            }
-
-            // Detecta CPF já existente
-            if (lower.includes('cpf') && (lower.includes('já') || lower.includes('ja') || lower.includes('associ'))) {
+            } else if (lower.includes('cpf') && (lower.includes('já') || lower.includes('ja') || lower.includes('associ'))) {
                 setError('Falha no Registro: O CPF já está sendo utilizado.');
-                return;
+            } else {
+                setError('Falha no Registro: ' + msg);
             }
-
-            // Caso geral: mostra a mensagem retornada pelo backend
-            setError('Falha no Registro: ' + msg);
+        } finally {
+            setLoading(false);
         }
     }
 
     return (
-        <div style={{ padding: '20px', maxWidth: '500px', margin: 'auto' }}>
-            <h2>Novo Registro</h2>
-            
-            <form onSubmit={handleRegistro}>
-                
-                {error && <p style={{ color: 'red', fontWeight: 'bold' }}>{error}</p>}
+        <AuthLayout title="Novo Registro" subtitle="Crie sua conta para começar">
+            <form onSubmit={handleRegistro} className="space-y-4">
+                {error && (
+                    <p className="rounded-lg border border-bat-red-600/50 bg-bat-red-500/10 px-3 py-2 text-sm font-medium text-bat-red-500">
+                        {error}
+                    </p>
+                )}
 
-                {/* Seleção de Perfil */}
-                <div style={{ marginBottom: '15px' }}>
-                    <label>Tipo de Perfil:</label><br/>
-                    <select 
-                        value={tipo}
-                        onChange={(e) => setTipo(e.target.value)}
-                        style={{ width: '100%', padding: '8px' }}
-                    >
+                <div>
+                    <Label htmlFor="tipo">Tipo de Perfil</Label>
+                    <Select id="tipo" value={tipo} onChange={(e) => setTipo(e.target.value)}>
                         <option value="Aluno">Aluno</option>
                         <option value="Instrutor">Instrutor</option>
-                    </select>
+                    </Select>
                 </div>
-                
-                {/* Campos Comuns */}
-                <input type="text" value={nome} onChange={(e) => setNome(e.target.value)} placeholder="Nome Completo" required style={{ width: '100%', padding: '8px', marginBottom: '10px' }} />
-                <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="E-mail" required style={{ width: '100%', padding: '8px', marginBottom: '10px' }} />
-                <input type="password" value={senha} onChange={(e) => setSenha(e.target.value)} placeholder="Senha" required style={{ width: '100%', padding: '8px', marginBottom: '10px' }} />
-                
-                {/* CAMPO NOVO */}
-                <input 
-                    type="password" 
-                    value={confirmaSenha} 
-                    onChange={(e) => setConfirmaSenha(e.target.value)} 
-                    placeholder="Confirme a Senha" 
-                    required 
-                    style={{ width: '100%', padding: '8px', marginBottom: '15px', borderColor: senha !== confirmaSenha && confirmaSenha.length > 0 ? 'red' : '' }} 
-                />
 
-                {/* Campos Específicos do Aluno */}
+                <div>
+                    <Label htmlFor="nome">Nome Completo</Label>
+                    <Input id="nome" type="text" value={nome} onChange={(e) => setNome(e.target.value)} placeholder="Seu nome completo" required />
+                </div>
+
+                <div>
+                    <Label htmlFor="email">E-mail</Label>
+                    <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="voce@email.com" required />
+                </div>
+
+                <div>
+                    <Label htmlFor="senha">Senha</Label>
+                    <Input id="senha" type="password" value={senha} onChange={(e) => setSenha(e.target.value)} placeholder="••••••••" required />
+                </div>
+
+                <div>
+                    <Label htmlFor="confirmaSenha">Confirme a Senha</Label>
+                    <Input
+                        id="confirmaSenha"
+                        type="password"
+                        value={confirmaSenha}
+                        onChange={(e) => setConfirmaSenha(e.target.value)}
+                        placeholder="••••••••"
+                        required
+                        invalid={senhasDivergem}
+                    />
+                </div>
+
                 {tipo === 'Aluno' && (
-                    <>
-                        <input
+                    <div>
+                        <Label htmlFor="cpf">CPF</Label>
+                        <Input
+                            id="cpf"
                             type="text"
                             value={cpf}
                             onChange={(e) => setCpf(e.target.value)}
-                            placeholder="CPF"
+                            placeholder="Somente números"
                             required
-                            style={{
-                                width: '100%',
-                                padding: '8px',
-                                marginBottom: '5px',
-                                borderColor: cpf && !/^\d{11}$/.test(cpf.replace(/\D/g, '')) ? 'red' : ''
-                            }}
+                            invalid={cpfInvalido}
                         />
-                        {cpf && !/^\d{11}$/.test(cpf.replace(/\D/g, '')) && (
-                            <div style={{ color: 'red', marginBottom: '10px', fontWeight: '500' }}>CPF inválido: insira 11 dígitos numéricos.</div>
+                        {cpfInvalido && (
+                            <p className="mt-1.5 text-sm font-medium text-bat-red-500">CPF inválido: insira 11 dígitos numéricos.</p>
                         )}
-                        {/* Campo Data Matrícula REMOVIDO */}
-                    </>
+                    </div>
                 )}
 
-                {/* Campos Específicos do Instrutor */}
                 {tipo === 'Instrutor' && (
-                    <input type="text" value={especialidade} onChange={(e) => setEspecialidade(e.target.value)} placeholder="Especialidade" required style={{ width: '100%', padding: '8px', marginBottom: '15px' }} />
+                    <div>
+                        <Label htmlFor="especialidade">Especialidade</Label>
+                        <Input
+                            id="especialidade"
+                            type="text"
+                            value={especialidade}
+                            onChange={(e) => setEspecialidade(e.target.value)}
+                            placeholder="Ex: Musculação, Funcional..."
+                            required
+                        />
+                    </div>
                 )}
 
-                <button type="submit" style={{ padding: '10px 15px', cursor: 'pointer' }}>Registrar</button>
-                <Link to="/login" style={{ marginLeft: '10px' }}>Já tenho conta</Link>
+                <Button type="submit" size="lg" className="w-full" disabled={loading}>
+                    {loading ? 'Registrando...' : 'Registrar'}
+                </Button>
+
+                <p className="text-center text-sm text-gotham-300">
+                    Já tem conta?{' '}
+                    <Link to="/login" className="font-semibold text-bat-yellow-500 hover:text-bat-yellow-400">
+                        Entrar
+                    </Link>
+                </p>
             </form>
-        </div>
+        </AuthLayout>
     );
 }
 

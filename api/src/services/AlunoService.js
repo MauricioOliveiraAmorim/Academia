@@ -1,4 +1,5 @@
 const alunoDAO = require('../dao/AlunoDAO');
+const { cleanAndValidateCpf } = require('../utils/cpf');
 
 class AlunoService {
     async criarAluno(nome, cpf, datamatricula) {
@@ -6,9 +7,11 @@ class AlunoService {
         if (!nome || !cpf) {
             throw new Error("Nome e CPF são obrigatórios.");
         }
-        
+
+        const cpfLimpo = cleanAndValidateCpf(cpf);
+
         // Se tudo ok, chama o DAO
-        return await alunoDAO.criar({ nome, cpf, datamatricula });
+        return await alunoDAO.criar({ nome, cpf: cpfLimpo, datamatricula });
     }
 
     async listarAlunos() {
@@ -24,7 +27,9 @@ class AlunoService {
     }
 
     async atualizarAluno(id, dados) {
-        // Poderia validar CPF aqui também
+        if (dados.cpf) {
+            dados = { ...dados, cpf: cleanAndValidateCpf(dados.cpf) };
+        }
         return await alunoDAO.atualizar(id, dados);
     }
 

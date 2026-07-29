@@ -1,4 +1,5 @@
 const alunoService = require('../services/AlunoService');
+const { prismaErrorResponse } = require('../utils/prismaErrorResponse');
 
 class AlunoController {
     async criar(req, res) {
@@ -44,7 +45,11 @@ class AlunoController {
             const alunoAtualizado = await alunoService.atualizarAluno(id, dados);
             return res.json(alunoAtualizado);
         } catch (error) {
-            return res.status(500).json({ error: "Erro ao atualizar aluno." });
+            if (!error.code) {
+                // Erro de validação lançado pelo Service (ex: CPF inválido), não um erro do Prisma
+                return res.status(400).json({ error: error.message });
+            }
+            return prismaErrorResponse(res, error, "Erro ao atualizar aluno.");
         }
     }
 
@@ -54,7 +59,7 @@ class AlunoController {
             await alunoService.deletarAluno(id);
             return res.status(204).send(); // 204 = No Content
         } catch (error) {
-            return res.status(500).json({ error: "Erro ao deletar aluno." });
+            return prismaErrorResponse(res, error, "Erro ao deletar aluno.");
         }
     }
 }

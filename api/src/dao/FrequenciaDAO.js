@@ -3,8 +3,11 @@ const prisma = require('../prismaClient');
 class FrequenciaDAO {
     async criar(dados) {
         // dados deve conter: { id_aluno, dia, presenca }
-        return await prisma.frequencia.create({
-            data: dados
+        // upsert: já existe frequência nesse dia para esse aluno, atualiza em vez de duplicar
+        return await prisma.frequencia.upsert({
+            where: { id_aluno_dia: { id_aluno: dados.id_aluno, dia: dados.dia } },
+            update: { presenca: dados.presenca },
+            create: dados
         });
     }
 

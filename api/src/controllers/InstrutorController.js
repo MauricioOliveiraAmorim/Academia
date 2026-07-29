@@ -1,4 +1,5 @@
 const instrutorService = require('../services/InstrutorService');
+const { prismaErrorResponse } = require('../utils/prismaErrorResponse');
 
 class InstrutorController {
     async criar(req, res) {
@@ -26,7 +27,7 @@ class InstrutorController {
             await instrutorService.deletarInstrutor(id);
             return res.status(204).send();
         } catch (error) {
-            return res.status(500).json({ error: "Erro ao deletar instrutor." });
+            return prismaErrorResponse(res, error, "Erro ao deletar instrutor.");
         }
     }
 }

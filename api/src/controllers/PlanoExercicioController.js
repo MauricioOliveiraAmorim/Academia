@@ -1,4 +1,5 @@
 const planoExercicioService = require('../services/PlanoExercicioService');
+const { prismaErrorResponse } = require('../utils/prismaErrorResponse');
 
 class PlanoExercicioController {
     async criar(req, res) {
@@ -30,7 +31,7 @@ class PlanoExercicioController {
             return res.status(204).send();
         } catch (error) {
             console.error(error);
-            return res.status(500).json({ error: 'Erro ao deletar item do plano.' });
+            return prismaErrorResponse(res, error, 'Erro ao deletar item do plano.');
         }
     }
 }

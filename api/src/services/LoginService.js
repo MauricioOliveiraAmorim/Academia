@@ -1,21 +1,9 @@
+const bcrypt = require('bcryptjs');
 const loginDAO = require('../dao/LoginDAO');
 const prisma = require('../prismaClient');
+const { cleanAndValidateCpf } = require('../utils/cpf');
 
-// Função auxiliar para limpar e validar o formato do CPF (11 dígitos)
-function cleanAndValidateCpf(cpf) {
-    if (!cpf) return null;
-    
-    // Remove todos os caracteres não-dígitos (pontos, traços, etc.)
-    const cleanCpf = cpf.replace(/\D/g, '');
-    
-    // Verifica se o CPF tem exatamente 11 dígitos
-    if (cleanCpf.length !== 11) {
-        throw new Error("Formato de CPF inválido. O CPF deve conter 11 dígitos.");
-    }
-    
-    // Em um ambiente de produção, adicionaríamos aqui a lógica dos dígitos verificadores.
-    return cleanCpf;
-}
+const SALT_ROUNDS = 10;
 
 class LoginService {
     async registrarNovoUsuario(dadosRegistro) {
@@ -36,8 +24,10 @@ class LoginService {
             throw new Error("Este e-mail já está registrado em nosso sistema.");
         }
 
+        const senhaHash = await bcrypt.hash(senha, SALT_ROUNDS);
+
         let dadosPerfil = {};
-        let dadosLogin = { email, senha, tipousuario: tipo };
+        let dadosLogin = { email, senha: senhaHash, tipousuario: tipo };
         
         // 2. VERIFICAÇÕES ESPECÍFICAS DE PERFIL (INCLUINDO CPF)
         if (tipo === 'Aluno') {
@@ -77,7 +67,11 @@ class LoginService {
         }
 
         // Chama o DAO para iniciar a transação de criação
-        return await loginDAO.registrar(tipo.toLowerCase(), dadosPerfil, dadosLogin);
+        const { perfil, novoLogin } = await loginDAO.registrar(tipo.toLowerCase(), dadosPerfil, dadosLogin);
+
+        // Nunca devolve o hash da senha para o cliente
+        const { senha: _senha, ...loginSemSenha } = novoLogin;
+        return { perfil, novoLogin: loginSemSenha };
     }
 
     async autenticar(email, senha) {
@@ -90,7 +84,8 @@ class LoginService {
             throw new Error("E-mail não encontrado.");
         }
 
-        if (login.senha !== senha) {
+        const senhaValida = await bcrypt.compare(senha, login.senha);
+        if (!senhaValida) {
             throw new Error("Senha incorreta.");
         }
         

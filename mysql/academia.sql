@@ -22,7 +22,8 @@ CREATE TABLE Frequencia (
   id_aluno INT NOT NULL,
   dia DATE NOT NULL,
   presenca ENUM('Falta', 'Presente') NOT NULL,
-  FOREIGN KEY (id_aluno) REFERENCES Aluno(id_aluno)
+  FOREIGN KEY (id_aluno) REFERENCES Aluno(id_aluno),
+  UNIQUE KEY id_aluno_dia (id_aluno, dia)
 );
 
 -- Tabela de Plano de Treino
@@ -43,7 +44,8 @@ CREATE TABLE Exercicio (
   nome VARCHAR(100) NOT NULL,
   grupomuscular VARCHAR(100) NOT NULL,
   equipamento VARCHAR(100) NOT NULL,
-  descricao VARCHAR(256)
+  descricao VARCHAR(256),
+  url_video VARCHAR(512)
 );
 
 -- Tabela de Plano de Exercício

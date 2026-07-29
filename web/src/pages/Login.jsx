@@ -1,59 +1,83 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import api from '../services/api'; 
+import api from '../services/api';
+import AuthLayout from '../components/AuthLayout';
+import Button from '../components/ui/Button';
+import { Input, Label } from '../components/ui/Input';
 
 function Login() {
     const [email, setEmail] = useState('');
     const [senha, setSenha] = useState('');
+    const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
 
     async function handleLogin(e) {
         e.preventDefault();
+        setLoading(true);
 
         try {
             const payload = { email, senha };
-            const resposta = await api.post('/auth/login', payload); 
-            
-            alert(`Bem-vindo, ${resposta.data.tipo}! ID: ${resposta.data.id}`);
-            
-            // Salvar email e ID no localStorage
+            const resposta = await api.post('/auth/login', payload);
+
             localStorage.setItem('userEmail', email);
             localStorage.setItem('userId', resposta.data.id);
 
-            // Redireciona para a tela principal (Aluno ou Instrutor) com base no tipo retornado
             const tipoRetornado = resposta.data?.tipo;
             const tipoLower = typeof tipoRetornado === 'string' ? tipoRetornado.toLowerCase() : '';
 
             if (tipoLower === 'instrutor') {
                 navigate('/instrutor');
             } else {
-                // Para alunos, salva o ID como alunoId
                 localStorage.setItem('alunoId', resposta.data.id);
                 navigate('/aluno');
             }
         } catch (error) {
             const msg = error.response?.data?.error || 'Verifique o servidor e as credenciais.';
             alert('Falha no Login: ' + msg);
+        } finally {
+            setLoading(false);
         }
     }
 
     return (
-        <div style={{ padding: '20px', maxWidth: '400px', margin: 'auto' }}>
-            <h2>Acessar o Sistema</h2>
-            
-            <form onSubmit={handleLogin}>
-                <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="E-mail" required style={{ width: '100%', padding: '10px', marginBottom: '15px', background: '#b0b0b020', border: '1px solid #b8860b' }} />
-                <input type="password" value={senha} onChange={(e) => setSenha(e.target.value)} placeholder="Senha" required style={{ width: '100%', padding: '10px', marginBottom: '20px', background: '#b0b0b020', border: '1px solid #b8860b' }} />
-                
-                <button type="submit" style={{ width: '100%', padding: '12px', cursor: 'pointer', backgroundColor: '#b8860b', color: '#0a0a0a', border: 'none' }}>
-                    Entrar
-                </button>
-                
-                <p style={{ textAlign: 'center', marginTop: '20px', color: '#b0b0b0' }}>
-                    Não tem conta? <Link to="/registro" style={{ color: '#b8860b' }}>Cadastre-se</Link>
+        <AuthLayout title="Acessar o Sistema" subtitle="Entre para acompanhar seus treinos">
+            <form onSubmit={handleLogin} className="space-y-4">
+                <div>
+                    <Label htmlFor="email">E-mail</Label>
+                    <Input
+                        id="email"
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="voce@email.com"
+                        required
+                    />
+                </div>
+
+                <div>
+                    <Label htmlFor="senha">Senha</Label>
+                    <Input
+                        id="senha"
+                        type="password"
+                        value={senha}
+                        onChange={(e) => setSenha(e.target.value)}
+                        placeholder="••••••••"
+                        required
+                    />
+                </div>
+
+                <Button type="submit" size="lg" className="w-full" disabled={loading}>
+                    {loading ? 'Entrando...' : 'Entrar'}
+                </Button>
+
+                <p className="text-center text-sm text-gotham-300">
+                    Não tem conta?{' '}
+                    <Link to="/registro" className="font-semibold text-bat-yellow-500 hover:text-bat-yellow-400">
+                        Cadastre-se
+                    </Link>
                 </p>
             </form>
-        </div>
+        </AuthLayout>
     );
 }
 

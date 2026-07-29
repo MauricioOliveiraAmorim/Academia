@@ -3,62 +3,74 @@ import { useNavigate } from 'react-router-dom';
 import ExercicioService from '../services/ExercicioService';
 import AlunoService from '../services/AlunoService';
 import FrequenciaService from '../services/FrequenciaService';
+import Topbar from '../components/ui/Topbar';
+import Card from '../components/ui/Card';
+import Button from '../components/ui/Button';
+import Modal from '../components/ui/Modal';
+import { Input, Textarea, Select, Label } from '../components/ui/Input';
+import Badge from '../components/ui/Badge';
 
-// Componente Tabela de Painel (Estilo Escuro/Sombrio)
-const DashboardTable = ({ title, columns, data, hasActionButton, actionHandler, actionLabel = 'Ação' }) => (
-    <div className="dashboard-table-container">
-        <h3 className="dashboard-table-title">{title}</h3>
+const mapExercicio = (e) => ({
+    nome: e.nome,
+    grupomuscular: e.grupomuscular,
+    equipamento: e.equipamento,
+    id: e.id_exercicio,
+    link_midia: e.url_video ? <a href={e.url_video} target="_blank" rel="noopener noreferrer" className="font-semibold text-bat-green-500 hover:text-bat-green-600">Ver Mídia</a> : '-'
+});
 
-        <table className="dashboard-table">
-            <thead>
-                <tr>
-                    {columns.map(col => (
-                        <th key={col.key} className="dashboard-table-th">{col.header}</th>
-                    ))}
-                    {hasActionButton && <th className="dashboard-table-th" style={{ textAlign: 'center' }}>Ação</th>}
-                </tr>
-            </thead>
-            <tbody>
-                {data.length > 0 ? (
-                    data.map((item, index) => (
-                        <tr key={index} className="dashboard-table-row">
-                            {columns.map(col => (
-                                <td key={col.key} className="dashboard-table-td">{item[col.key]}</td>
-                            ))}
-                            {hasActionButton && (
-                                <td className="dashboard-table-td" style={{ textAlign: 'center' }}>
-                                    <button onClick={() => actionHandler(item.id)} className="action-btn">{actionLabel}</button>
-                                </td>
-                            )}
-                        </tr>
-                    ))
-                ) : (
-                    <tr>
-                        <td colSpan={columns.length + (hasActionButton ? 1 : 0)} className="dashboard-empty">
-                            Nenhum dado carregado.
-                        </td>
+const DashboardTable = ({ title, columns, data, hasActionButton, actionHandler, actionLabel = 'Ação', actionVariant = 'ghost' }) => (
+    <Card className="flex-1 min-w-0 p-5">
+        <h3 className="mb-4 border-b border-gotham-700 pb-3 font-display text-xl tracking-wide text-bat-yellow-500">{title}</h3>
+
+        <div className="overflow-x-auto">
+            <table className="w-full border-collapse text-sm">
+                <thead>
+                    <tr className="bg-gotham-700/60">
+                        {columns.map(col => (
+                            <th key={col.key} className="whitespace-nowrap px-3 py-2.5 text-left font-semibold text-bat-yellow-500">{col.header}</th>
+                        ))}
+                        {hasActionButton && <th className="px-3 py-2.5 text-center font-semibold text-bat-yellow-500">Ação</th>}
                     </tr>
-                )}
-            </tbody>
-        </table>
-    </div>
+                </thead>
+                <tbody>
+                    {data.length > 0 ? (
+                        data.map((item, index) => (
+                            <tr key={index} className="border-b border-gotham-700/60 transition-colors hover:bg-gotham-700/30">
+                                {columns.map(col => (
+                                    <td key={col.key} className="px-3 py-2.5 text-gotham-100">{item[col.key]}</td>
+                                ))}
+                                {hasActionButton && (
+                                    <td className="px-3 py-2.5 text-center">
+                                        <Button size="sm" variant={actionVariant} onClick={() => actionHandler(item.id)}>{actionLabel}</Button>
+                                    </td>
+                                )}
+                            </tr>
+                        ))
+                    ) : (
+                        <tr>
+                            <td colSpan={columns.length + (hasActionButton ? 1 : 0)} className="px-3 py-6 text-center italic text-gotham-300">
+                                Nenhum dado carregado.
+                            </td>
+                        </tr>
+                    )}
+                </tbody>
+            </table>
+        </div>
+    </Card>
 );
 
 const InstrutorDashboard = () => {
     const navigate = useNavigate();
 
-    // --- Estados para Armazenar Dados (VAZIOS) ---
     const [alunosData, setAlunosData] = useState([]);
     const [exerciciosData, setExerciciosData] = useState([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [novoExercicio, setNovoExercicio] = useState({ nome: '', grupomuscular: '', equipamento: '', descricao: '', url_video: '' });
 
-    // Estado para Frequência
     const [isFrequenciaModalOpen, setIsFrequenciaModalOpen] = useState(false);
     const [novaFrequencia, setNovaFrequencia] = useState({ id_aluno: '', dia: '', presenca: 'Presente' });
 
     useEffect(() => {
-        // Buscar alunos e exercícios do backend
         async function fetchData() {
             try {
                 const [alunosResp, exerciciosResp] = await Promise.all([
@@ -66,18 +78,14 @@ const InstrutorDashboard = () => {
                     ExercicioService.listar()
                 ]);
 
-                setAlunosData((alunosResp?.data || []).map(a => ({ 
-                    nome_aluno: a.nome, 
-                    nome_plano: (a.planotreino && a.planotreino.length > 0) ? 'Ativo' : 'Inativo', 
-                    id: a.id_aluno 
+                setAlunosData((alunosResp?.data || []).map(a => ({
+                    nome_aluno: a.nome,
+                    nome_plano: (a.planotreino && a.planotreino.length > 0)
+                        ? <Badge tone="success">Ativo</Badge>
+                        : <Badge tone="neutral">Inativo</Badge>,
+                    id: a.id_aluno
                 })));
-                setExerciciosData((exerciciosResp?.data || []).map(e => ({ 
-                    nome: e.nome, 
-                    grupomuscular: e.grupomuscular, 
-                    equipamento: e.equipamento, 
-                    id: e.id_exercicio,
-                    link_midia: e.url_video ? <a href={e.url_video} target="_blank" rel="noopener noreferrer" style={{color: '#4CAF50'}}>Ver Mídia</a> : '-'
-                })));
+                setExerciciosData((exerciciosResp?.data || []).map(mapExercicio));
             } catch (err) {
                 console.error('Erro ao buscar dados do dashboard:', err);
             }
@@ -85,12 +93,13 @@ const InstrutorDashboard = () => {
 
         fetchData();
     }, []);
-    // ---------------------------------
 
     function handleLogout() {
+        localStorage.removeItem('userEmail');
+        localStorage.removeItem('userId');
         navigate('/login');
     }
-    
+
     const handleViewAluno = (alunoId) => {
         navigate(`/alunos/${alunoId}`);
     };
@@ -103,15 +112,8 @@ const InstrutorDashboard = () => {
     const handleCreateExercicio = async () => {
         try {
             await ExercicioService.criar(novoExercicio);
-            // Recarrega a lista de exercícios
             const resp = await ExercicioService.listar();
-            setExerciciosData((resp?.data || []).map(e => ({ 
-                nome: e.nome, 
-                grupomuscular: e.grupomuscular, 
-                equipamento: e.equipamento, 
-                id: e.id_exercicio,
-                link_midia: e.url_video ? <a href={e.url_video} target="_blank" rel="noopener noreferrer" style={{color: '#4CAF50'}}>Ver Mídia</a> : '-'
-            })));
+            setExerciciosData((resp?.data || []).map(mapExercicio));
             setIsModalOpen(false);
             alert('Exercício criado com sucesso.');
         } catch (err) {
@@ -128,13 +130,11 @@ const InstrutorDashboard = () => {
             setExerciciosData(prev => prev.filter(x => x.id !== id));
         } catch (err) {
             console.error('Erro ao deletar exercício:', err);
-            // Exibe a mensagem de erro vinda do backend (ex: vinculado a plano)
             const mensagemErro = err.response?.data?.error || 'Falha ao deletar exercício.';
             alert(mensagemErro);
         }
     };
 
-    // Handlers de Frequência
     const handleOpenFrequenciaModal = () => {
         setNovaFrequencia({ id_aluno: '', dia: new Date().toISOString().split('T')[0], presenca: 'Presente' });
         setIsFrequenciaModalOpen(true);
@@ -155,7 +155,6 @@ const InstrutorDashboard = () => {
         }
     };
 
-    // Definição das colunas
     const alunoColumns = [
         { key: 'nome_aluno', header: 'Nome do Aluno' },
         { key: 'nome_plano', header: 'Plano de Treino' },
@@ -169,149 +168,130 @@ const InstrutorDashboard = () => {
     ];
 
     return (
-        <div className="instrutor-dashboard-dark">
+        <div className="min-h-screen bg-gotham-950">
+            <Topbar
+                title="Academia"
+                subtitle="Painel do Instrutor"
+                right={<Button variant="secondary" size="sm" onClick={handleLogout}>Sair</Button>}
+            />
 
-            {/* Top bar */}
-            <header className="instrutor-topbar-dark">
-                <div className="instrutor-brand-dark">Academia | Painel Instrutor</div>
-
-                <nav>
-                    <div className="topbar-center-dark">Visão Geral</div>
-                </nav>
-
-                <div>
-                    <button onClick={handleLogout} className="logout-btn-dark">Logout</button>
+            <main className="mx-auto max-w-[1400px] px-6 py-8">
+                <div className="mb-6 flex flex-wrap justify-end gap-3">
+                    <Button onClick={handleAddExercicio}>+ Adicionar Exercício</Button>
+                    <Button variant="success" onClick={handleOpenFrequenciaModal}>+ Marcar Frequência</Button>
                 </div>
-            </header>
 
-            {/* Conteúdo principal */}
-            <main className="dashboard-main-dark">
-                <div className="dashboard-wrapper">
+                <div className="flex flex-col gap-6 lg:flex-row">
+                    <DashboardTable
+                        title="Alunos e Planos Ativos"
+                        columns={alunoColumns}
+                        data={alunosData}
+                        hasActionButton={true}
+                        actionHandler={handleViewAluno}
+                        actionLabel="Ver/Editar"
+                    />
 
-                    {/* Botões de Ação */}
-                    <div className="add-exercicio-row" style={{ gap: '10px', display: 'flex' }}>
-                        <button onClick={handleAddExercicio} className="add-exercicio-btn">+ Adicionar Novo Exercício</button>
-                        <button onClick={handleOpenFrequenciaModal} className="add-exercicio-btn" style={{ backgroundColor: '#4CAF50' }}>+ Marcar Frequência</button>
-                    </div>
-
-                    {/* Tabelas Lado a Lado */}
-                    <div className="tables-container">
-                        {/* Tabela de Alunos */}
-                        <DashboardTable
-                            title="Alunos e Planos Ativos"
-                            columns={alunoColumns}
-                            data={alunosData}
-                            hasActionButton={true}
-                            actionHandler={handleViewAluno}
-                            actionLabel={'Ver/Editar'}
-                        />
-
-                        {/* Tabela de Exercícios */}
-                        <DashboardTable
-                            title="Biblioteca de Exercícios"
-                            columns={exercicioColumns}
-                            data={exerciciosData}
-                            hasActionButton={true}
-                            actionHandler={(id) => handleDeleteExercicio(id)}
-                            actionLabel={'Deletar'}
-                        />
-                    </div>
+                    <DashboardTable
+                        title="Biblioteca de Exercícios"
+                        columns={exercicioColumns}
+                        data={exerciciosData}
+                        hasActionButton={true}
+                        actionHandler={(id) => handleDeleteExercicio(id)}
+                        actionLabel="Deletar"
+                        actionVariant="danger"
+                    />
                 </div>
             </main>
 
-            {/* Modal de Criação de Exercício */}
             {isModalOpen && (
-                <div className="modal-backdrop">
-                    <div className="modal-card">
-                        <h3>Novo Exercício</h3>
-
-                        <div className="form-row">
-                            <label>Nome</label>
-                            <input value={novoExercicio.nome} onChange={(e) => setNovoExercicio(prev => ({ ...prev, nome: e.target.value }))} />
+                <Modal
+                    title="Novo Exercício"
+                    onClose={() => setIsModalOpen(false)}
+                    footer={
+                        <>
+                            <Button variant="secondary" onClick={() => setIsModalOpen(false)}>Cancelar</Button>
+                            <Button onClick={handleCreateExercicio}>Criar</Button>
+                        </>
+                    }
+                >
+                    <div className="space-y-4">
+                        <div>
+                            <Label>Nome</Label>
+                            <Input value={novoExercicio.nome} onChange={(e) => setNovoExercicio(prev => ({ ...prev, nome: e.target.value }))} />
                         </div>
-
-                        <div className="form-row">
-                            <label>Grupo Muscular</label>
-                            <input value={novoExercicio.grupomuscular} onChange={(e) => setNovoExercicio(prev => ({ ...prev, grupomuscular: e.target.value }))} />
+                        <div>
+                            <Label>Grupo Muscular</Label>
+                            <Input value={novoExercicio.grupomuscular} onChange={(e) => setNovoExercicio(prev => ({ ...prev, grupomuscular: e.target.value }))} />
                         </div>
-
-                        <div className="form-row">
-                            <label>Equipamento</label>
-                            <input value={novoExercicio.equipamento} onChange={(e) => setNovoExercicio(prev => ({ ...prev, equipamento: e.target.value }))} />
+                        <div>
+                            <Label>Equipamento</Label>
+                            <Input value={novoExercicio.equipamento} onChange={(e) => setNovoExercicio(prev => ({ ...prev, equipamento: e.target.value }))} />
                         </div>
-
-                        <div className="form-row">
-                            <label>Descrição</label>
-                            <textarea rows={4} value={novoExercicio.descricao} onChange={(e) => setNovoExercicio(prev => ({ ...prev, descricao: e.target.value }))} />
+                        <div>
+                            <Label>Descrição</Label>
+                            <Textarea rows={4} value={novoExercicio.descricao} onChange={(e) => setNovoExercicio(prev => ({ ...prev, descricao: e.target.value }))} />
                         </div>
-
-                        <div className="form-row">
-                            <label>URL do Vídeo/Imagem</label>
-                            <input 
-                                type="text" 
-                                placeholder="https://youtube.com/..." 
-                                value={novoExercicio.url_video} 
-                                onChange={(e) => setNovoExercicio(prev => ({ ...prev, url_video: e.target.value }))} 
+                        <div>
+                            <Label>URL do Vídeo/Imagem</Label>
+                            <Input
+                                type="text"
+                                placeholder="https://youtube.com/..."
+                                value={novoExercicio.url_video}
+                                onChange={(e) => setNovoExercicio(prev => ({ ...prev, url_video: e.target.value }))}
                             />
                         </div>
-
-                        <div className="modal-actions">
-                            <button onClick={() => setIsModalOpen(false)} style={{ background: '#ddd', color: '#000' }}>Cancelar</button>
-                            <button onClick={handleCreateExercicio}>Criar</button>
-                        </div>
                     </div>
-                </div>
+                </Modal>
             )}
 
-            {/* Modal de Frequência */}
             {isFrequenciaModalOpen && (
-                <div className="modal-backdrop">
-                    <div className="modal-card">
-                        <h3>Registrar Frequência</h3>
-
-                        <div className="form-row">
-                            <label>Aluno</label>
-                            <select 
-                                value={novaFrequencia.id_aluno} 
+                <Modal
+                    title="Registrar Frequência"
+                    onClose={() => setIsFrequenciaModalOpen(false)}
+                    footer={
+                        <>
+                            <Button variant="secondary" onClick={() => setIsFrequenciaModalOpen(false)}>Cancelar</Button>
+                            <Button variant="success" onClick={handleCreateFrequencia}>Registrar</Button>
+                        </>
+                    }
+                >
+                    <div className="space-y-4">
+                        <div>
+                            <Label>Aluno</Label>
+                            <Select
+                                value={novaFrequencia.id_aluno}
                                 onChange={(e) => setNovaFrequencia(prev => ({ ...prev, id_aluno: e.target.value }))}
-                                style={{ width: '100%', padding: '8px', borderRadius: '4px' }}
                             >
                                 <option value="">Selecione um aluno...</option>
                                 {alunosData.map(aluno => (
-                                    <option key={aluno.id_aluno} value={aluno.id_aluno}>
+                                    <option key={aluno.id} value={aluno.id}>
                                         {aluno.nome_aluno}
                                     </option>
                                 ))}
-                            </select>
+                            </Select>
                         </div>
 
-                        <div className="form-row">
-                            <label>Data</label>
-                            <input 
-                                type="date" 
-                                value={novaFrequencia.dia} 
-                                onChange={(e) => setNovaFrequencia(prev => ({ ...prev, dia: e.target.value }))} 
+                        <div>
+                            <Label>Data</Label>
+                            <Input
+                                type="date"
+                                value={novaFrequencia.dia}
+                                onChange={(e) => setNovaFrequencia(prev => ({ ...prev, dia: e.target.value }))}
                             />
                         </div>
 
-                        <div className="form-row">
-                            <label>Status</label>
-                            <select 
-                                value={novaFrequencia.presenca} 
+                        <div>
+                            <Label>Status</Label>
+                            <Select
+                                value={novaFrequencia.presenca}
                                 onChange={(e) => setNovaFrequencia(prev => ({ ...prev, presenca: e.target.value }))}
-                                style={{ width: '100%', padding: '8px', borderRadius: '4px' }}
                             >
                                 <option value="Presente">Presente</option>
                                 <option value="Falta">Falta</option>
-                            </select>
-                        </div>
-
-                        <div className="modal-actions">
-                            <button onClick={() => setIsFrequenciaModalOpen(false)} style={{ background: '#ddd', color: '#000' }}>Cancelar</button>
-                            <button onClick={handleCreateFrequencia}>Registrar</button>
+                            </Select>
                         </div>
                     </div>
-                </div>
+                </Modal>
             )}
         </div>
     );
