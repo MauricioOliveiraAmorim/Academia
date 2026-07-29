@@ -3,14 +3,14 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
 model aluno {
   id_aluno      Int           @id @default(autoincrement())
   nome          String        @db.VarChar(100)
-  cpf           String        @unique(map: "cpf") @db.Char(14)
+  cpf           String        @unique(map: "cpf") @db.Char(11)
   datamatricula DateTime?     @db.Date
   frequencia    frequencia[]
   planotreino   planotreino[]

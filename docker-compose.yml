@@ -1,21 +1,22 @@
 services:
-  mysql:
-    image: mysql:8.0
-    container_name: academia-mysql
+  postgres:
+    image: postgres:16
+    container_name: academia-postgres
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: academia
-      MYSQL_DATABASE: Academia
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: academia
+      POSTGRES_DB: academia
     ports:
-      - "3306:3306"
+      - "5432:5432"
     volumes:
-      - academia-mysql-data:/var/lib/mysql
-      - ./mysql/academia.sql:/docker-entrypoint-initdb.d/academia.sql:ro
+      - academia-postgres-data:/var/lib/postgresql/data
+      - ./postgres/academia.sql:/docker-entrypoint-initdb.d/academia.sql:ro
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-p$$MYSQL_ROOT_PASSWORD"]
+      test: ["CMD-SHELL", "pg_isready -U postgres -d academia"]
       interval: 5s
       timeout: 5s
       retries: 10
 
 volumes:
-  academia-mysql-data:
+  academia-postgres-data:

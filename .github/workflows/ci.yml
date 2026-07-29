@@ -14,7 +14,7 @@ jobs:
       run:
         working-directory: api
     env:
-      DATABASE_URL: "mysql://root:root@localhost:3306/Academia"
+      DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/academia"
       JWT_SECRET: "ci-test-secret"
     steps:
       - uses: actions/checkout@v4
